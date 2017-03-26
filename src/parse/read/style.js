@@ -1,5 +1,5 @@
-import parse from 'css-tree/lib/parser/index.js';
-import walk from 'css-tree/lib/utils/walk.js';
+import csstree from 'css-tree';
+const { parse, walk } = csstree;
 
 export default function readStyle ( parser, start, attributes ) {
 	const contentStart = parser.index;
@@ -22,7 +22,7 @@ export default function readStyle ( parser, start, attributes ) {
 	}
 
 	// tidy up AST
-	walk.all( ast, node => {
+	walk( ast, node => {
 		if ( node.loc ) {
 			node.start = node.loc.start.offset;
 			node.end = node.loc.end.offset;
