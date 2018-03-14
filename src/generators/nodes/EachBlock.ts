@@ -336,12 +336,12 @@ export default class EachBlock extends Node {
 					${fn}(${expected});
 					${expected} = ${expected}.next;
 				}
-
-				for (#i = 0; #i < discard_pile.length; #i += 1) {
-					if (discard_pile[#i].discard) {
-						${fn}(discard_pile[#i]);
-					}
+			for (var key_all in all) {
+				if (!rendered[key_all]) {
+					all[key_all].u();
+					all[key_all].d();
 				}
+			}
 			`;
 		} else {
 			const fn = block.getUniqueName(`${each}_destroy`);
@@ -358,19 +358,17 @@ export default class EachBlock extends Node {
 					${fn}(${expected});
 					${expected} = ${expected}.next;
 				}
-
-				for (#i = 0; #i < discard_pile.length; #i += 1) {
-					var ${iteration} = discard_pile[#i];
-					if (${iteration}.discard) {
-						${fn}(${iteration});
-					}
+			for (var key_all in all) {
+				if (!rendered[key_all]) {
+					all[key_all].u();
+					all[key_all].d();
 				}
+			}
 			`;
 		}
 
 		block.builders.update.addBlock(deindent`
 			var ${each_block_value} = ${snippet};
-
 			var ${expected} = ${head};
 			var ${last} = null;
 
@@ -378,10 +376,10 @@ export default class EachBlock extends Node {
 			var all = {};
 
 			var each_all = ${head};
-		      while(each_all) {
-		        all[each_all.key] = each_all;
-		        each_all = each_all.next;
-		      }
+			while(each_all) {
+				all[each_all.key] = each_all;
+				each_all = each_all.next;
+			}
 
 			for (#i = 0; #i < ${each_block_value}.${length}; #i += 1) {
 				var ${key} = ${each_block_value}[#i].${this.key};
@@ -399,21 +397,19 @@ export default class EachBlock extends Node {
 						${expected} = ${expected}.next;
 					} else {
 						if (${iteration}) {
-
-						  var next_data = ${each_block_value}[#i+1];
-			              var next = next_data && ${lookup}[next_data.id];
-			              var first = ${iteration}.first;
-			              var first_next = next && next.first;
-			              ///insertNode(first, tbody, first_next);
-			              ${updateMountNode}.insertBefore(first, first_next);
-			              ${expected} = next;
-			              ${iteration}.next = ${expected};
-			              var prev_data = ${each_block_value}[#i-1];
-			              var prev = prev_data && ${lookup}[prev_data.id];
-			              if (prev) {
-			              	prev.next = ${iteration};
-			              	}
-
+							var next_data = ${each_block_value}[#i+1];
+							var next = next_data && ${lookup}[next_data.id];
+							var first = ${iteration}.first;
+							var first_next = next && next.first;
+							// insertNode(first, ${updateMountNode}, first_next);
+							${updateMountNode}.insertBefore(first, first_next);
+							${expected} = next;
+							${iteration}.next = ${expected};
+							var prev_data = ${each_block_value}[#i-1];
+							var prev = prev_data && ${lookup}[prev_data.id];
+							if (prev) {
+								prev.next = ${iteration};
+							}
 						} else {
 							// key is being inserted
 							${iteration} = ${lookup}[${key}] = ${create_each_block}(#component, ${key}, ${this.each_context});
@@ -436,8 +432,8 @@ export default class EachBlock extends Node {
 					}
 				}
 				if (${iteration}) {
-		          rendered[${iteration}.key] = ${iteration};
-		        }
+					rendered[${iteration}.key] = ${iteration};
+				}
 
 				if (${last}) ${last}.next = ${iteration};
 				${iteration}.last = ${last};
@@ -447,9 +443,7 @@ export default class EachBlock extends Node {
 
 			if (${last}) ${last}.next = null;
 
-			for (var key_all in all) {
-		        if (!rendered[key_all]) all[key_all].d();
-		      }
+			${destroy}
 
 
 
