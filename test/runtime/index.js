@@ -11,7 +11,8 @@ import {
 	loadSvelte,
 	env,
 	setupHtmlEqual,
-	spaces
+	spaces,
+	virtualConsole
 } from "../helpers.js";
 
 let svelte;
@@ -183,7 +184,7 @@ describe("runtime", () => {
 					if (config.html) {
 						assert.htmlEqual(target.innerHTML, config.html);
 					}
-
+					virtualConsole.on('debug', () => console.debug)
 					if (config.test) {
 						return Promise.resolve(config.test(assert, component, target, window, raf)).then(() => {
 							component.destroy();
@@ -210,9 +211,11 @@ describe("runtime", () => {
 
 	const shared = path.resolve("shared.js");
 	fs.readdirSync("test/runtime/samples").forEach(dir => {
-		runTest(dir, shared, false);
-		runTest(dir, shared, true);
-		runTest(dir, null, false);
+		if (dir == 'each-block-keyed') {
+			runTest(dir, shared, false);
+			runTest(dir, shared, true);
+			runTest(dir, null, false);
+		}
 	});
 
 	it("fails if options.target is missing in dev mode", () => {
